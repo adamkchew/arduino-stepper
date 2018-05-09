@@ -18,6 +18,7 @@ Example based off of demos by Brian Schmalz (designer of the Easy Driver).
 http://www.schmalzhaus.com/EasyDriver/Examples/EasyDriverExamples.html
 ******************************************************************************/
 //Declare pin functions on Redboard
+#define LED 13
 #define stp 2
 #define dir 3
 #define MS1 4
@@ -30,7 +31,18 @@ http://www.schmalzhaus.com/EasyDriver/Examples/EasyDriverExamples.html
 //Declare variables for functions
 int i;
 int j;
-int speed = 1; // 10 for 5 minutes 20 for 10 minutes; 40 for 20 minutes; 60 for 30 minutes
+
+//1 for 10 seconds
+//2 for 20 seconds
+//3 for 40 seconds
+//4 for 10 minutes
+//5 for 20 minutes
+//6 for 30 minutes
+//7 for 1 hours
+//8 for 6 hours
+
+int hyper = 3;
+int speed = 1;
 
 bool enabled = false;
 
@@ -45,8 +57,6 @@ void setup() {
   pinMode(LIMIT2, INPUT);
 
   digitalWrite(EN, HIGH); //Setting the motor to set off by default
-  digitalWrite(MS1, HIGH); //Pull MS1, and MS2 high to set logic to 1/8th microstep resolution
-  digitalWrite(MS2, HIGH);
 
   Serial.begin(9600); //Open Serial connection for debugging
   Serial.println("Starting. Click on both limit switches at the same time to toggle");
@@ -95,6 +105,67 @@ void toggleStepper() {
   enabled = !enabled; //Toggle the on and off
 
   if(enabled) {
+    delay(1000);
+
+    //Toggle the speed settings by holding down the limits longer
+    while(digitalRead(LIMIT1) == LOW && digitalRead(LIMIT2) == LOW) {
+      Serial.print("Setting hyper at ");
+      Serial.println(hyper);
+  
+      hyper = hyper + 1;
+      if(hyper >= 9) hyper = 1; //Resetting the hyper back to original
+  
+      for(i = 0; i < hyper; i++) {
+        digitalWrite(LED,HIGH); //Trigger one step forward
+        delay(150);
+        digitalWrite(LED,LOW); //Pull step pin low so it can be triggered again
+        delay(150);
+      }
+     
+      delay(1000);
+    }
+
+    if(hyper == 1) { // 10 seconds
+      digitalWrite(MS1, HIGH);
+      digitalWrite(MS2, LOW);
+      speed = 1;   
+    }
+    if(hyper == 2) { // 20 seconds
+      digitalWrite(MS1, LOW);
+      digitalWrite(MS2, HIGH);    
+      speed = 1;  
+    }
+    if(hyper == 3) { // 40 seconds
+      digitalWrite(MS1, HIGH); //Pull MS1, and MS2 high to set logic to 1/8th microstep resolution
+      digitalWrite(MS2, HIGH);   
+      speed = 1;
+    }
+    if(hyper == 4) { // 10 minutes
+      digitalWrite(MS1, HIGH); //Pull MS1, and MS2 high to set logic to 1/8th microstep resolution
+      digitalWrite(MS2, HIGH);   
+      speed = 20;
+    }
+    if(hyper == 5) { // 20 minutes
+      digitalWrite(MS1, HIGH); //Pull MS1, and MS2 high to set logic to 1/8th microstep resolution
+      digitalWrite(MS2, HIGH);   
+      speed = 40;
+    }
+    if(hyper == 6) { // 30 minutes
+      digitalWrite(MS1, HIGH); //Pull MS1, and MS2 high to set logic to 1/8th microstep resolution
+      digitalWrite(MS2, HIGH);   
+      speed = 60;
+    }
+    if(hyper == 7) { // 1 hours
+      digitalWrite(MS1, HIGH); //Pull MS1, and MS2 high to set logic to 1/8th microstep resolution
+      digitalWrite(MS2, HIGH);   
+      speed = 120;
+    }
+    if(hyper == 8) { // 6 hours
+      digitalWrite(MS1, HIGH); //Pull MS1, and MS2 high to set logic to 1/8th microstep resolution
+      digitalWrite(MS2, HIGH);   
+      speed = 720;
+    }
+    
     digitalWrite(EN, LOW);
   } else {
     digitalWrite(EN, HIGH);
